@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
 import prisma from "@/lib/prisma";
 import * as bcrypt from "bcrypt";
+import { User } from "@prisma/client";
 
 export const options: AuthOptions = {
   providers: [
@@ -36,7 +37,7 @@ export const options: AuthOptions = {
           throw new Error("Please enter your password!");
         const isPasswordCorrect = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isPasswordCorrect)
@@ -47,4 +48,15 @@ export const options: AuthOptions = {
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.user = user as User;
+      return token;
+    },
+
+    async session({ token, session }) {
+      session.user = token.user;
+      return session;
+    },
+  },
 };

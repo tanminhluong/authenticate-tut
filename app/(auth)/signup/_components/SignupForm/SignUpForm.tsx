@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as z from "zod";
 import {
   EnvelopeIcon,
@@ -14,6 +14,10 @@ import { Button, Checkbox, Input, Link } from "@nextui-org/react";
 import validator from "validator";
 import { Controller, Form, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { passwordStrength } from "check-password-strength";
+import PasswordStrength from "../PasswordStrength";
+import { registerUser } from "@/lib/actions/authActions";
+import { toast } from "react-toastify";
 
 const FormSchema = z
   .object({
@@ -59,15 +63,29 @@ export default function SignUpForm() {
     reset,
     control,
     formState: { errors },
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
   });
+
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
+  const [passStrength, setPassStrength] = useState(0);
+
+  useEffect(() => {
+    setPassStrength(passwordStrength(watch().password).id);
+  }, [watch().password]);
 
   const toggleVisible = () => setIsVisiblePassword((prev) => !prev);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log({ data });
+    const { accepted, confirmPassword, ...user } = data;
+    try {
+      const result = await registerUser(user);
+      toast.success("User Register successful");
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.error(error);
+    }
   };
   return (
     <form
@@ -126,6 +144,9 @@ export default function SignUpForm() {
           )
         }
       />
+      <div className="col-span-2">
+        <PasswordStrength passStrength={passStrength} />
+      </div>
       <Input
         errorMessage={errors.confirmPassword?.message}
         isInvalid={!!errors.confirmPassword}
