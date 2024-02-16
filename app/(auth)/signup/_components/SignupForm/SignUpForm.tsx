@@ -62,7 +62,7 @@ export default function SignUpForm() {
     handleSubmit,
     reset,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     watch,
   } = useForm<FormData>({
     resolver: zodResolver(FormSchema),
@@ -73,7 +73,7 @@ export default function SignUpForm() {
 
   useEffect(() => {
     setPassStrength(passwordStrength(watch().password).id);
-  }, [watch().password]);
+  }, [watch]);
 
   const toggleVisible = () => setIsVisiblePassword((prev) => !prev);
 
@@ -173,7 +173,13 @@ export default function SignUpForm() {
         <p className="text-red-500">{errors.accepted.message}</p>
       )}
       <div className="col-span-2 flex justify-center">
-        <Button className="w-48" color="primary" type="submit">
+        <Button
+          isLoading={isSubmitting}
+          disabled={isSubmitting}
+          className="w-48"
+          color="primary"
+          type="submit"
+        >
           Submit
         </Button>
       </div>

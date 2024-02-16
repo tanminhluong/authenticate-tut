@@ -6,6 +6,9 @@ import * as bcrypt from "bcrypt";
 import { User } from "@prisma/client";
 
 export const options: AuthOptions = {
+  pages: {
+    signIn: "/signin",
+  },
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID as string,
